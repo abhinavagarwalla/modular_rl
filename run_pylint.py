@@ -16,7 +16,7 @@ from glob import glob
 
 def cap(cmd):
     "call and print"
-    print "\x1b[32m%s\x1b[0m"%cmd
+    print("\x1b[32m%s\x1b[0m"%cmd)
     subprocess.call(cmd,shell=True)
 
 def recursive_glob(basedir):

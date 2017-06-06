@@ -33,14 +33,14 @@ def cem(f,th_mean,batch_size,n_iter,elite_frac, initial_std=1.0, extra_std=0.0, 
 
     th_std = np.ones(th_mean.size)*initial_std
 
-    for iteration in xrange(n_iter):
+    for iteration in range(n_iter):
 
         extra_var_multiplier = max((1.0-iteration/float(std_decay_time)),0) # Multiply "extra variance" by this factor
-        print "extra var", extra_var_multiplier
+        print("extra var", extra_var_multiplier)
         sample_std = np.sqrt(th_std + np.square(extra_std) * extra_var_multiplier)
 
         ths = np.array([th_mean + dth for dth in  sample_std[None,:]*np.random.randn(batch_size, th_mean.size)])
-        if pool is None: ys = np.array(map(f, ths))
+        if pool is None: ys = np.array(list(map(f, ths)))
         else: ys = np.array(pool.map(f, ths))
         assert ys.ndim==1
         elite_inds = ys.argsort()[-n_elite:]
@@ -74,7 +74,7 @@ def run_cem_algorithm(env, agent, usercfg=None, callback=None):
     cfg = update_default_config(CEM_OPTIONS, usercfg)
     if cfg["std_decay_time"] < 0: cfg["std_decay_time"] = cfg["n_iter"] / 2 
     cfg.update(usercfg)
-    print "cem config", cfg
+    print("cem config", cfg)
 
     G = parallel_utils.G
     G.env = env
@@ -92,7 +92,7 @@ def run_cem_algorithm(env, agent, usercfg=None, callback=None):
         cfg["initial_std"], cfg["extra_std"], cfg["std_decay_time"], pool=pool):
         callback(info)
         ps = np.linspace(0,100,5)
-        print tabulate([ps, np.percentile(info["ys"].ravel(),ps), np.percentile(info["std"].ravel(),ps)])
+        print(tabulate([ps, np.percentile(info["ys"].ravel(),ps), np.percentile(info["std"].ravel(),ps)]))
 
         agent.set_from_flat(info["th"])
 

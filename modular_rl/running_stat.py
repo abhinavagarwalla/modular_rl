@@ -36,7 +36,7 @@ def test_running_stat():
     for shp in ((), (3,), (3,4)):
         li = []
         rs = RunningStat(shp)
-        for _ in xrange(5):
+        for _ in range(5):
             val = np.random.randn(*shp)
             rs.push(val)
             li.append(val)

@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import atexit, numpy as np, scipy, sys, os.path as osp
 from collections import defaultdict
 
@@ -68,7 +68,7 @@ def update_default_config(tuples, usercfg):
     for (name,_,defval,_) in tuples:
         out[name] = defval
     if usercfg:
-        for (k,v) in usercfg.iteritems():
+        for (k,v) in usercfg.items():
             if k in out:
                 out[k] = v
     return out
@@ -77,7 +77,7 @@ def update_argument_parser(parser, options, **kwargs):
     kwargs = kwargs.copy()
     for (name,typ,default,desc) in options:
         flag = "--"+name
-        if flag in parser._option_string_actions.keys(): #pylint: disable=W0212
+        if flag in list(parser._option_string_actions.keys()): #pylint: disable=W0212
             print("warning: already have option %s. skipping"%name)
         else:
             parser.add_argument(flag, type=typ, default=kwargs.pop(name,default), help=desc or " ")
@@ -86,7 +86,7 @@ def update_argument_parser(parser, options, **kwargs):
 
 def comma_sep_ints(s):
     if s:
-        return map(int, s.split(","))
+        return list(map(int, s.split(",")))
     else:
         return []
 
@@ -112,11 +112,11 @@ def prepare_h5_file(args):
     outfile_default = "/tmp/a.h5"
     fname = args.outfile or outfile_default
     if osp.exists(fname) and fname != outfile_default:
-        raw_input("output file %s already exists. press enter to continue. (exit with ctrl-C)"%fname)
+        input("output file %s already exists. press enter to continue. (exit with ctrl-C)"%fname)
     import h5py
     hdf = h5py.File(fname,"w")
     hdf.create_group('params')
-    for (param,val) in args.__dict__.items():
+    for (param,val) in list(args.__dict__.items()):
         try: hdf['params'][param] = val
         except (ValueError,TypeError):
             print("not storing parameter",param)
@@ -124,7 +124,7 @@ def prepare_h5_file(args):
     print("Saving results to %s"%fname)
     def save():
         hdf.create_group("diagnostics")
-        for (diagname, val) in diagnostics.items():
+        for (diagname, val) in list(diagnostics.items()):
             hdf["diagnostics"][diagname] = val
     hdf["cmd"] = " ".join(sys.argv)
     atexit.register(save)
@@ -145,7 +145,7 @@ class dict2(dict):
 def zipsame(*seqs):
     L = len(seqs[0])
     assert all(len(seq) == L for seq in seqs[1:])
-    return zip(*seqs)
+    return list(zip(*seqs))
 
 def flatten(arrs):
     return np.concatenate([arr.flat for arr in arrs])

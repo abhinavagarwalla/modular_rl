@@ -6,7 +6,7 @@ This script runs a policy gradient algorithm
 
 from gym.envs import make
 from modular_rl import *
-import argparse, sys, cPickle
+import argparse, sys, pickle
 from tabulate import tabulate
 import shutil, os, logging
 import gym
@@ -41,18 +41,18 @@ if __name__ == "__main__":
         global COUNTER
         COUNTER += 1
         # Print stats
-        print "*********** Iteration %i ****************" % COUNTER
-        print tabulate(filter(lambda (k,v) : np.asarray(v).size==1, stats.items())) #pylint: disable=W0110
+        print("*********** Iteration %i ****************" % COUNTER)
+        print(tabulate([k_v for k_v in list(stats.items()) if np.asarray(k_v[1]).size==1])) #pylint: disable=W0110
         # Store to hdf5
         if args.use_hdf:
-            for (stat,val) in stats.items():
+            for (stat,val) in list(stats.items()):
                 if np.asarray(val).ndim==0:
                     diagnostics[stat].append(val)
                 else:
                     assert val.ndim == 1
                     diagnostics[stat].extend(val)
             if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)):
-                hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
+                hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(pickle.dumps(agent,-1))
         # Plot
         if args.plot:
             animate_rollout(env, agent, min(500, args.timestep_limit))
@@ -61,6 +61,6 @@ if __name__ == "__main__":
 
     if args.use_hdf:
         hdf['env_id'] = env_spec.id
-        try: hdf['env'] = np.array(cPickle.dumps(env, -1))
-        except Exception: print "failed to pickle env" #pylint: disable=W0703
+        try: hdf['env'] = np.array(pickle.dumps(env, -1))
+        except Exception: print("failed to pickle env") #pylint: disable=W0703
     env.close()

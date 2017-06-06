@@ -5,7 +5,7 @@ This script runs the cross-entropy method
 
 from gym.envs import make
 from modular_rl import *
-import argparse, sys, cPickle, shutil
+import argparse, sys, pickle, shutil
 import gym, logging
 
 from tabulate import tabulate
@@ -22,7 +22,8 @@ if __name__ == "__main__":
     mondir = args.outfile + ".dir"
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
-    env.monitor.start(mondir,video_callable=None if args.video else VIDEO_NEVER)
+    #env.monitor.start(mondir,video_callable=None if args.video else VIDEO_NEVER)
+    gym.wrappers.Monitor(env, mondir)
     agent_ctor = get_agent_cls(args.agent)
     update_argument_parser(parser, agent_ctor.options)
     update_argument_parser(parser, CEM_OPTIONS)
@@ -40,18 +41,18 @@ if __name__ == "__main__":
     COUNTER = 0
     def callback(stats):
         global COUNTER
-        for (stat,val) in stats.items():
+        for (stat,val) in list(stats.items()):
             diagnostics[stat].append(val)
         if args.plot:
             animate_rollout(env, agent, min(500, args.timestep_limit))
-        print "*********** Iteration %i ****************" % COUNTER
-        print tabulate(filter(lambda (k,v) : np.asarray(v).size==1, stats.items())) #pylint: disable=W0110
+        print("*********** Iteration %i ****************" % COUNTER)
+        print(tabulate([k_v for k_v in list(stats.items()) if np.asarray(k_v[1]).size==1])) #pylint: disable=W0110
         COUNTER += 1
         if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)): 
-            hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
+            hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(pickle.dumps(agent,-1))
     run_cem_algorithm(env, agent, callback=callback, usercfg = cfg)
 
     hdf['env_id'] = env_spec.id
-    try: hdf['env'] = np.array(cPickle.dumps(env, -1))
-    except Exception: print "failed to pickle env" #pylint: disable=W0703
+    try: hdf['env'] = np.array(pickle.dumps(env, -1))
+    except Exception: print("failed to pickle env") #pylint: disable=W0703
     env.monitor.close()
