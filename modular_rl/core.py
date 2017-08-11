@@ -542,11 +542,12 @@ class ConcatFixedStd(Layer):
         input_dim = input_shape[1]
         self.logstd = theano.shared(np.zeros(input_dim,floatX), name='{}_logstd'.format(self.name))
         self.trainable_weights = [self.logstd]
+        super(ConcatFixedStd, self).build(input_shape)
 
-    def get_output_shape_for(self, input_shape):
+    def compute_ouput_shape(self, input_shape):
         return (input_shape[0], input_shape[1] * 2)
 
-    def call(self, x, mask):
+    def call(self, x, mask=None):
         Mean = x
         Std = T.repeat(T.exp(self.logstd)[None, :], Mean.shape[0], axis=0)
         return T.concatenate([Mean, Std], axis=1)

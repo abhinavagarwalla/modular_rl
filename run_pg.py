@@ -10,6 +10,8 @@ import argparse, sys, pickle
 from tabulate import tabulate
 import shutil, os, logging
 import gym
+import opensim as osim
+from osim.env import *
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -18,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
+    #env = RunEnv(False)
     env = make(args.env)
     env_spec = env.spec
     mondir = args.outfile + ".dir"

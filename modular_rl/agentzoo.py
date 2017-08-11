@@ -35,6 +35,7 @@ def make_mlps(ob_space, ac_space, cfg):
         net.add(Dense(outdim))
         Wlast = net.layers[-1].kernel
         Wlast.set_value(Wlast.get_value(borrow=True)*0.1)
+        print(net.summary())
         net.add(ConcatFixedStd())
     else:
         net.add(Dense(outdim, activation="softmax"))
