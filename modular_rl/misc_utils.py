@@ -131,6 +131,15 @@ def prepare_h5_file(args):
 
     return hdf, diagnostics
 
+def load_h5_file(args):
+    print(args)
+    fname = args.load_snapshot
+    if not osp.exists(fname):
+        raise ValueError("args.load_snapshot {} does not exist".format(fname))
+    print("Loading previous snapshot at {}".format(fname))
+    import h5py
+    hdf = h5py.File(fname, "a")
+    return hdf
 
 # ================================================================
 # Misc
