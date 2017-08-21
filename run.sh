@@ -1,0 +1,2 @@
+source activate opensim-rl
+nohup python run_pg.py --gamma=0.995 --lam=0.97 --agent=modular_rl.agentzoo.TrpoAgent --max_kl=0.01 --cg_damping=0.1 --activation=tanh --n_iter=200 --seed=4 --timesteps_per_batch=5000 --env=osim --outfile=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial1.h5 --load_snapshot=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial1.h5 --use_hdf 1 --snapshot_every 10 > out_pg.txt &
