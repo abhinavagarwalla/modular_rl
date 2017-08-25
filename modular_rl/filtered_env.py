@@ -2,7 +2,7 @@ from gym import Env, spaces
 import numpy as np
 
 class FilteredEnv(Env): #pylint: disable=W0223
-    def __init__(self, env, ob_filter, rew_filter):
+    def __init__(self, env, ob_filter=None, rew_filter=None):
         self.env = env
         self.ob_filter = ob_filter
         self.rew_filter = rew_filter

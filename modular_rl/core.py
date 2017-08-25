@@ -37,8 +37,10 @@ def add_episode_stats(stats, paths):
     stats["EpRewMean"] = episoderewards.mean()
     stats["EpRewSEM"] = episoderewards.std()/np.sqrt(len(paths))
     stats["EpRewMax"] = episoderewards.max()
+    stats["EpRewMin"] = episoderewards.min()
     stats["EpLenMean"] = pathlengths.mean()
     stats["EpLenMax"] = pathlengths.max()
+    stats["EpLenMin"] = pathlengths.min()
     stats["RewPerStep"] = episoderewards.sum()/pathlengths.sum()
 
 def add_prefixed_stats(stats, prefix, d):
@@ -157,11 +159,11 @@ def get_paths(env, agent, cfg, seed_iter):
     return paths
 
 
-def rollout(env, agent, timestep_limit):
+def rollout(env, agent, timestep_limit, seed):
     """
     Simulate the env and agent for timestep_limit steps
     """   
-    ob = env.reset()
+    ob = env.reset(seed)
     terminated = False
 
     data = defaultdict(list)
@@ -190,7 +192,7 @@ def do_rollouts_serial(agent, timestep_limit, n_timesteps, seed):
     timesteps_sofar = 0
     while True:
         np.random.seed(seed)
-        path = rollout(env, agent, timestep_limit)
+        path = rollout(env, agent, timestep_limit, seed)
         paths.append(path)
         timesteps_sofar += pathlength(path)
         if timesteps_sofar > n_timesteps:
@@ -205,17 +207,21 @@ def pathlength(path):
 def animate_rollout(env, agent, n_timesteps,delay=.01):
     total_reward = 0.
     ob = env.reset()
-    env.render()
+    # env.render()
+    # ob = np.array(ob)
     for i in range(n_timesteps):
+        ob = agent.obfilt(ob)
         a, _info = agent.act(ob)
-        (ob, _rew, done, _info) = env.step(a)
+        ob, _rew, done, _info = env.step(a)
+        # _rew = agent.rewfilt(_rew)
         total_reward += _rew
-        env.render()
+        # env.render()
+        ob = np.array(ob)
         if done:
             print(("terminated after %s timesteps"%i))
             break
         time.sleep(delay)
-    print("Total episode reward = {}".format(total_rew))
+    print("Total episode reward = {}".format(total_reward))
 
 # ================================================================
 # Stochastic policies 

@@ -1,5 +1,5 @@
 source activate opensim-rl
-rm models/trial_parallel.h5
+# rm models/trial_parallel.h5
 # look for hidden_sizes
 # nohup python run_pg.py --gamma=0.995 --lam=0.97 --agent=modular_rl.agentzoo.TrpoAgent --max_kl=0.01 --cg_damping=0.1 --activation=tanh --n_iter=40 --seed=4 --timesteps_per_batch=50000 --parallel 16 --env=osim --outfile=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial_parallel.h5 --load_snapshot=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial_parallel.h5 --use_hdf 1 --snapshot_every 100 > out_pg.txt &
-nohup python run_pg.py --gamma=0.995 --lam=0.97 --agent=modular_rl.agentzoo.TrpoAgent --max_kl=0.01 --cg_damping=0.1 --activation=tanh --n_iter=40 --seed=4 --timesteps_per_batch=50000 --parallel 16 --env=osim --outfile=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial_parallel.h5 --use_hdf 1 --snapshot_every 100 > out_pg.txt &
+nohup CUDA_VISIBLE_DEVICES="" python run_pg.py --gamma=0.995 --lam=0.97 --agent=modular_rl.agentzoo.TrpoAgent --max_kl=0.01 --cg_damping=0.1 --activation=tanh --n_iter=500 --seed=4 --timesteps_per_batch=20000 --parallel 16 --env=osim --outfile=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial_parallel.h5 --load_snapshot=/home/du2/12CS30009/arnav/RunForestRun/modular_rl/models/trial_parallel.h5 --use_hdf 1 --snapshot_every 100 > out_pg_3.txt &

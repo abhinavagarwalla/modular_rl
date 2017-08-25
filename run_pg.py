@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--env",required=True)
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
+    # parser.add_argument("--filteryn", default=False, action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
     
     env = RunEnv(False)
@@ -40,6 +41,12 @@ if __name__ == "__main__":
         args.timestep_limit = env_spec.timestep_limit
     cfg = args.__dict__
     np.random.seed(args.seed)
+
+    if False: #args.filter_yes_or_no:
+        of = ConcatPrevious()
+        # rf = ConcatPrevious()
+        env = FilteredEnv(env, ob_filter=of)
+
     agent = agent_ctor(env.observation_space, env.action_space, cfg)
     if args.use_hdf:
         if args.load_snapshot:

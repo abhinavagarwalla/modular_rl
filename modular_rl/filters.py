@@ -54,3 +54,14 @@ class Ind2OneHot(object):
         return out
     def output_shape(self, input_space):
         return (input_space.n,)
+
+class ConcatPrevious(object):
+    def __init__(self):
+        self.prev = None
+
+    def __call__(self, x, update=True):
+        print(type(x))
+        return x
+
+    def output_shape(self, input_space):
+        return input_space.shape
