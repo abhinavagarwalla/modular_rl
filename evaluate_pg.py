@@ -23,7 +23,6 @@ if __name__ == "__main__":
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
     
     env = RunEnv(False)
-    # env = make(args.env)
     env_spec = env.spec
     
     mondir = args.outfile + ".dir"
@@ -39,15 +38,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.timestep_limit == 0:
         args.timestep_limit = env_spec.timestep_limit
-    cfg = args.__dict__
     np.random.seed(args.seed)
 
-    agent = agent_ctor(env.observation_space, env.action_space, cfg)
     if args.use_hdf:
         if args.load_snapshot:
             hdf = load_h5_file(args)
-            for key in hdf["agent_snapshots"].keys()[-3:]:
-                # key = hdf["agent_snapshots"].keys()[3]
-                latest_snapshot = hdf["agent_snapshots"][key]
-                agent = cPickle.loads(latest_snapshot.value)
-                animate_rollout(env, agent, min(1000, args.timestep_limit))
+            print(hdf["agent_snapshots"].keys()[-2])
+            for key in hdf["agent_snapshots"].keys()[-1:]:
+                for i in range(100):
+                    print("Evaluating with key: ", key, " , i=", i)
+                    latest_snapshot = hdf["agent_snapshots"][key]
+                    agent = cPickle.loads(latest_snapshot.value)
+                    agent.stochastic=False
+                    animate_rollout(env, agent, min(1000, args.timestep_limit))
