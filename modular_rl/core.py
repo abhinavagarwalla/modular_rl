@@ -10,6 +10,7 @@ from .keras_theano_setup import floatX, FNOPTS
 from keras.layers.core import Layer
 from .filters import *
 from .filtered_env import *
+import random
 
 import opensim as osim
 from osim.env import *
@@ -93,11 +94,12 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
     for _ in range(cfg["n_iter"]):
         # Rollouts ========
         paths = get_paths(env, agent, cfg, seed_iter)
-        compute_advantage(agent.baseline, paths, gamma=cfg["gamma"], lam=cfg["lam"])
+        paths_subsampled = subsample_paths(paths)
+        compute_advantage(agent.baseline, paths_subsampled, gamma=cfg["gamma"], lam=cfg["lam"])
         # VF Update ========
-        vf_stats = agent.baseline.fit(paths)
+        vf_stats = agent.baseline.fit(paths_subsampled)
         # Pol Update ========
-        pol_stats = agent.updater(paths)
+        pol_stats = agent.updater(paths_subsampled)
         # Stats ========
         stats = OrderedDict()
         add_episode_stats(stats, paths)
@@ -105,6 +107,14 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
         add_prefixed_stats(stats, "pol", pol_stats)
         stats["TimeElapsed"] = time.time() - tstart
         if callback: callback(stats)
+
+def subsample_paths(paths):
+    for i in range(len(paths)):
+        plen = paths[i]['action'].shape[0]
+        rno = random.sample(range(plen), 2*plen/3)
+        for j in paths[i].keys():
+            paths[i][j] = np.delete(paths[i][j], rno, axis=0)
+    return paths
 
 def parallel_rollout_worker((agent, ts_limit, ts_batch, iffilter, seed)):
     try:
