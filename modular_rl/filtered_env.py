@@ -1,7 +1,9 @@
 from gym import Env, spaces
 import numpy as np
+import opensim as osim
+from osim.env import *
 
-class FilteredEnv(Env): #pylint: disable=W0223
+class FilteredEnv(RunEnv): #pylint: disable=W0223
     def __init__(self, env, ob_filter=None, rew_filter=None):
         self.env = env
         self.ob_filter = ob_filter
@@ -19,8 +21,8 @@ class FilteredEnv(Env): #pylint: disable=W0223
         info["reward_raw"] = rew
         return (nob, nrew, done, info)
 
-    def _reset(self):
-        ob = self.env.reset()
+    def _reset(self, difficulty=0, seed=None):
+        ob = self.env.reset(difficulty, seed)
         return self.ob_filter(ob) if self.ob_filter else ob
 
     def _render(self, *args, **kw):

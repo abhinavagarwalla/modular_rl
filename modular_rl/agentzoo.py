@@ -30,9 +30,14 @@ def make_mlps(ob_space, ac_space, cfg):
     net = Sequential()
     for (i, layeroutsize) in enumerate(hid_sizes):
         inshp = dict(input_shape=ob_space.shape) if i==0 else {}
-        net.add(Dense(layeroutsize, activation=cfg["activation"], **inshp))
+        if cfg["activation"]!='lrelu':
+            net.add(Dense(layeroutsize, activation=cfg["activation"], **inshp))
+        else:
+            act = LeakyReLU()
+            net.add(Dense(layeroutsize, **inshp))
+            net.add(act)
     if isinstance(ac_space, Box):
-        net.add(Dense(outdim))
+        net.add(Dense(outdim)) #, activation="tanh")
         Wlast = net.layers[-1].kernel
         Wlast.set_value(Wlast.get_value(borrow=True)*0.1)
         print(net.summary())
@@ -45,7 +50,12 @@ def make_mlps(ob_space, ac_space, cfg):
     vfnet = Sequential()
     for (i, layeroutsize) in enumerate(hid_sizes):
         inshp = dict(input_shape=(ob_space.shape[0]+1,)) if i==0 else {} # add one extra feature for timestep
-        vfnet.add(Dense(layeroutsize, activation=cfg["activation"], **inshp))
+        if cfg["activation"]!='lrelu':
+            vfnet.add(Dense(layeroutsize, activation=cfg["activation"], **inshp))
+        else:
+            act = LeakyReLU()
+            vfnet.add(Dense(layeroutsize, **inshp))
+            net.add(act)
     vfnet.add(Dense(1))
     baseline = NnVf(vfnet, cfg["timestep_limit"], dict(mixfrac=0.1))
     return policy, baseline
@@ -75,7 +85,7 @@ FILTER_OPTIONS = [
 ]
 
 def make_filters(cfg, ob_space):
-    if cfg["filter"]:
+    if cfg["filter"]==1:
         obfilter = ZFilter(ob_space.shape, clip=5)
         rewfilter = ZFilter((), demean=False, clip=10)
     else:

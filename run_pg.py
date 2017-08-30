@@ -19,7 +19,6 @@ if __name__ == "__main__":
     parser.add_argument("--env",required=True)
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
-    # parser.add_argument("--filteryn", default=False, action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
     
     env = RunEnv(False)
@@ -42,12 +41,13 @@ if __name__ == "__main__":
     cfg = args.__dict__
     np.random.seed(args.seed)
 
-    if False: #args.filter_yes_or_no:
-        of = ConcatPrevious()
-        # rf = ConcatPrevious()
-        env = FilteredEnv(env, ob_filter=of)
+    if args.filter:
+        ofd = ConcatPrevious(env.observation_space)
+        env = FilteredEnv(env, ob_filter=ofd)
 
     agent = agent_ctor(env.observation_space, env.action_space, cfg)
+    print("Agent actor has been loaded")
+
     if args.use_hdf:
         if args.load_snapshot:
             hdf = load_h5_file(args)
@@ -84,7 +84,8 @@ if __name__ == "__main__":
     run_policy_gradient_algorithm(env, agent, callback=callback, usercfg = cfg)
 
     if args.use_hdf:
-        hdf['env_id'] = env_spec.id
-        try: hdf['env'] = np.array(cPickle.dumps(env, -1))
+        try:
+            hdf['env_id'] = env_spec.id 
+            hdf['env'] = np.array(cPickle.dumps(env, -1))
         except Exception: print("failed to cPickle env") #pylint: disable=W0703
     env.close()

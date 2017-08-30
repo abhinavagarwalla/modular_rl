@@ -8,6 +8,8 @@ from importlib import import_module
 import scipy.optimize
 from .keras_theano_setup import floatX, FNOPTS
 from keras.layers.core import Layer
+from .filters import *
+from .filtered_env import *
 
 import opensim as osim
 from osim.env import *
@@ -104,10 +106,10 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
         stats["TimeElapsed"] = time.time() - tstart
         if callback: callback(stats)
 
-def parallel_rollout_worker((agent, ts_limit, ts_batch, seed)):
+def parallel_rollout_worker((agent, ts_limit, ts_batch, iffilter, seed)):
     try:
         # print("Paralel rollout has been called")
-        return do_rollouts_serial(agent, ts_limit, ts_batch, seed)
+        return do_rollouts_serial(agent, ts_limit, ts_batch, iffilter, seed)
     except Exception, e:
         print("Exception in rollout worker: %s" % e)
         import traceback; traceback.print_exc()
@@ -132,7 +134,7 @@ def get_paths(env, agent, cfg, seed_iter):
             args_list = [(agent,
                   cfg['timestep_limit'],
                   cfg['timesteps_per_batch'] / num_processes,
-                  next(seed_iter)
+                  cfg['filter'], next(seed_iter)
                   ) for _ in range(num_processes)]
             print(args_list)
             result = pool.map_async(parallel_rollout_worker, args_list, callback=callback)
@@ -155,7 +157,7 @@ def get_paths(env, agent, cfg, seed_iter):
 
         print("Time elapsed (%d workers): %.2f" % (num_processes, time.time() - start_time))
     else:
-        paths = do_rollouts_serial(agent, cfg["timestep_limit"], cfg["timesteps_per_batch"], next(seed_iter))
+        paths = do_rollouts_serial(agent, cfg["timestep_limit"], cfg["timesteps_per_batch"], cfg["filter"], next(seed_iter))
     return paths
 
 
@@ -163,7 +165,7 @@ def rollout(env, agent, timestep_limit, seed):
     """
     Simulate the env and agent for timestep_limit steps
     """   
-    ob = env.reset(seed)
+    ob = env._reset(difficulty = 0, seed = seed)
     terminated = False
 
     data = defaultdict(list)
@@ -186,8 +188,11 @@ def rollout(env, agent, timestep_limit, seed):
     data["terminated"] = terminated
     return data
 
-def do_rollouts_serial(agent, timestep_limit, n_timesteps, seed):
+def do_rollouts_serial(agent, timestep_limit, n_timesteps, iffilter, seed):
     env = RunEnv(False)
+    if iffilter:
+        ofd = ConcatPrevious(env.observation_space)
+        env = FilteredEnv(env, ob_filter=ofd)
     paths = []
     timesteps_sofar = 0
     while True:
@@ -221,6 +226,7 @@ def animate_rollout(env, agent, n_timesteps,delay=.01):
             print(("terminated after %s timesteps"%i))
             break
         time.sleep(delay)
+    print(a.tolist())
     print("Total episode reward = {}".format(total_reward))
 
 # ================================================================

@@ -36,6 +36,7 @@ class ZFilter(object):
         if self.clip:
             x = np.clip(x, -self.clip, self.clip)
         return x
+
     def output_shape(self, input_space):
         return input_space.shape
 
@@ -56,12 +57,15 @@ class Ind2OneHot(object):
         return (input_space.n,)
 
 class ConcatPrevious(object):
-    def __init__(self):
-        self.prev = None
+    def __init__(self, obspace):
+        print(obspace.shape)
+        self.prev = np.zeros(obspace.shape)
 
     def __call__(self, x, update=True):
-        print(type(x))
-        return x
+        x = np.array(x)
+        xc = np.concatenate([x, (x-self.prev)/0.01])
+        self.prev = x
+        return xc
 
     def output_shape(self, input_space):
-        return input_space.shape
+        return ((input_space.shape[0]*2, ))
