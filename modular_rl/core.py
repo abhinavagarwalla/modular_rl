@@ -11,6 +11,7 @@ from keras.layers.core import Layer
 from .filters import *
 from .filtered_env import *
 import random
+import copy
 
 import opensim as osim
 from osim.env import *
@@ -108,7 +109,8 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
         stats["TimeElapsed"] = time.time() - tstart
         if callback: callback(stats)
 
-def subsample_paths(paths):
+def subsample_paths(gpaths):
+    paths = copy.deepcopy(gpaths)
     for i in range(len(paths)):
         plen = paths[i]['action'].shape[0]
         rno = random.sample(range(plen), 2*plen/3)
