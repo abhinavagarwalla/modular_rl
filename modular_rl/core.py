@@ -95,7 +95,7 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
     for _ in range(cfg["n_iter"]):
         # Rollouts ========
         paths = get_paths(env, agent, cfg, seed_iter)
-        paths_subsampled = subsample_paths(paths)
+        paths_subsampled = paths #subsample_paths(paths)
         compute_advantage(agent.baseline, paths_subsampled, gamma=cfg["gamma"], lam=cfg["lam"])
         # VF Update ========
         vf_stats = agent.baseline.fit(paths_subsampled)
@@ -109,14 +109,14 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
         stats["TimeElapsed"] = time.time() - tstart
         if callback: callback(stats)
 
-def subsample_paths(gpaths):
-    paths = copy.deepcopy(gpaths)
-    for i in range(len(paths)):
-        plen = paths[i]['action'].shape[0]
-        rno = random.sample(range(plen), 2*plen/3)
-        for j in paths[i].keys():
-            paths[i][j] = np.delete(paths[i][j], rno, axis=0)
-    return paths
+# def subsample_paths(gpaths):
+#     paths = copy.deepcopy(gpaths)
+#     for i in range(len(paths)):
+#         plen = paths[i]['action'].shape[0]
+#         rno = random.sample(range(plen), 2*plen/3)
+#         for j in paths[i].keys():
+#             paths[i][j] = np.delete(paths[i][j], rno, axis=0)
+#     return paths
 
 def parallel_rollout_worker((agent, ts_limit, ts_batch, iffilter, seed)):
     try:
