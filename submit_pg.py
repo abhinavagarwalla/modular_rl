@@ -41,13 +41,19 @@ if __name__ == "__main__":
     cfg = args.__dict__
     np.random.seed(args.seed)
 
+    # if args.filter:
+    #     ofd = ConcatPrevious(env.observation_space)
+    #     env = FilteredEnv(env, ob_filter=ofd)
+
     agent = agent_ctor(env.observation_space, env.action_space, cfg)
     hdf = load_h5_file(args)
     key = hdf["agent_snapshots"].keys()[-2]
     latest_snapshot = hdf["agent_snapshots"][key]    
     agent = cPickle.loads(latest_snapshot.value)
+    ofd = ConcatPrevious(env.observation_space)
 
     while True:
+        observation = ofd(observation)
         ob = agent.obfilt(observation)
         a, _info = agent.act(ob)
         [observation, reward, done, info] = client.env_step(a.tolist())
@@ -56,6 +62,7 @@ if __name__ == "__main__":
             observation = client.env_reset()
             latest_snapshot = hdf["agent_snapshots"][key]    
             agent = cPickle.loads(latest_snapshot.value)
+            ofd = ConcatPrevious(env.observation_space)
             if not observation:
                 break
 

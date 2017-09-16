@@ -58,6 +58,8 @@ if __name__ == "__main__":
         else:
             hdf, diagnostics = prepare_h5_file(args)
             COUNTER = 0
+    else:
+        COUNTER = 0
     gym.logger.setLevel(logging.WARN)
 
     def callback(stats):
@@ -76,7 +78,9 @@ if __name__ == "__main__":
                         assert val.ndim == 1
                         diagnostics[stat].extend(val)
             if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)):
+                print("Saving model at COUNTER=", COUNTER, agent)
                 hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
+                print("Model saving done")
         # Plot
         if args.plot:
             animate_rollout(env, agent, min(1000, args.timestep_limit))
