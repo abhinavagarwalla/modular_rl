@@ -21,7 +21,7 @@ class FilteredEnv(RunEnv): #pylint: disable=W0223
         info["reward_raw"] = rew
         return (nob, nrew, done, info)
 
-    def _reset(self, difficulty=0, seed=None):
+    def _reset(self, difficulty=2, seed=None):
         ob = self.env.reset(difficulty, seed)
         return self.ob_filter(ob) if self.ob_filter else ob
 

@@ -69,3 +69,25 @@ class ConcatPrevious(object):
 
     def output_shape(self, input_space):
         return ((input_space.shape[0]*2, ))
+
+class FeatureInducer(object):
+    def __init__(self, obspace):
+        print(obspace.shape)
+        self.prev = None #np.zeros(obspace.shape)
+
+    def concatprevious(self, x):
+        if not self.prev:
+            self.prev = np.zeros(x.shape)
+        xdiff = (x-self.prev)/0.01
+        xc = np.concatenate([x, xdiff[:-5]])
+        return xc
+
+    def __call__(self, x, update=True):
+        x = np.array(x)
+        x = np.delete(, [1,2])
+        xc = self.concatprevious(x)
+        self.prev = x
+        return xc
+
+    def output_shape(self, input_space):
+        return ((input_space.shape[0]*2, ))

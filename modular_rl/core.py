@@ -223,7 +223,7 @@ def pathlength(path):
 
 def animate_rollout(env, agent, n_timesteps,delay=.01):
     total_reward = 0.
-    ob = env.reset()
+    ob = env._reset()
     # env.render()
     # ob = np.array(ob)
     for i in range(n_timesteps):

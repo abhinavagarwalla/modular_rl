@@ -45,7 +45,7 @@ if __name__ == "__main__":
             hdf = load_h5_file(args)
             print(hdf["agent_snapshots"].keys()[-2])
             for key in hdf["agent_snapshots"].keys()[-1:]:
-                for i in range(100):
+                for i in range(3):
                     print("Evaluating with key: ", key, " , i=", i)
                     latest_snapshot = hdf["agent_snapshots"][key]
                     agent = cPickle.loads(latest_snapshot.value)
