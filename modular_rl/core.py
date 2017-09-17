@@ -177,7 +177,7 @@ def rollout(env, agent, timestep_limit, seed):
     """
     Simulate the env and agent for timestep_limit steps
     """   
-    ob = env._reset(difficulty = 0, seed = seed)
+    ob = env._reset(difficulty = 2, seed = seed)
     terminated = False
 
     data = defaultdict(list)
@@ -223,10 +223,14 @@ def pathlength(path):
 
 def animate_rollout(env, agent, n_timesteps,delay=.01):
     total_reward = 0.
-    ob = env._reset()
+    ob = env.reset()
+    print("Applying filter on Environment")
+    ofd = ConcatPrevious(env.observation_space)
+    # ob = ofd(ob)
     # env.render()
     # ob = np.array(ob)
     for i in range(n_timesteps):
+        ob = ofd(ob)
         ob = agent.obfilt(ob)
         a, _info = agent.act(ob)
         ob, _rew, done, _info = env.step(a)

@@ -19,7 +19,6 @@ if __name__ == "__main__":
     parser.add_argument("--env",required=True)
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
-    # parser.add_argument("--filteryn", default=False, action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
     
     env = RunEnv(False)
@@ -40,6 +39,8 @@ if __name__ == "__main__":
         args.timestep_limit = env_spec.timestep_limit
     np.random.seed(args.seed)
 
+    #     env = FilteredEnv(env, ob_filter=ofd)
+
     if args.use_hdf:
         if args.load_snapshot:
             hdf = load_h5_file(args)
@@ -50,4 +51,5 @@ if __name__ == "__main__":
                     latest_snapshot = hdf["agent_snapshots"][key]
                     agent = cPickle.loads(latest_snapshot.value)
                     agent.stochastic=False
+                    print(env, agent.obfilt)
                     animate_rollout(env, agent, min(1000, args.timestep_limit))
