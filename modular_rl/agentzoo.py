@@ -89,6 +89,7 @@ def make_filters(cfg, ob_space):
         obfilter = ZFilter(ob_space.shape, clip=5)
         rewfilter = ZFilter((), demean=False, clip=10)
     else:
+        print("Using Identity Filter for Agent")
         obfilter = IDENTITY
         rewfilter = IDENTITY
     return obfilter, rewfilter

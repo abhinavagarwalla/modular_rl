@@ -41,7 +41,10 @@ if __name__ == "__main__":
     cfg = args.__dict__
     np.random.seed(args.seed)
 
-    if args.filter:
+    if args.filter==2:
+        ofd = FeatureInducer(env.observation_space)
+        env = FilteredEnv(env, ob_filter=ofd)
+    elif args.filter==1:
         ofd = ConcatPrevious(env.observation_space)
         env = FilteredEnv(env, ob_filter=ofd)
 

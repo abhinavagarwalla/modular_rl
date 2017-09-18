@@ -202,7 +202,10 @@ def rollout(env, agent, timestep_limit, seed):
 
 def do_rollouts_serial(agent, timestep_limit, n_timesteps, iffilter, seed):
     env = RunEnv(False)
-    if iffilter:
+    if iffilter==2:
+        ofd = FeatureInducer(env.observation_space)
+        env = FilteredEnv(env, ob_filter=ofd)
+    elif iffilter==1:
         ofd = ConcatPrevious(env.observation_space)
         env = FilteredEnv(env, ob_filter=ofd)
     paths = []
