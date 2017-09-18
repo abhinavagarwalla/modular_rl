@@ -109,6 +109,35 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
         stats["TimeElapsed"] = time.time() - tstart
         if callback: callback(stats)
 
+def run_policy_gradient_algorithm_hardmining(env, agent, usercfg=None, callback=None, seed_iter=None):
+    cfg = update_default_config(PG_OPTIONS, usercfg)
+    cfg.update(usercfg)
+    print("policy gradient config", cfg)
+
+    # if cfg["parallel"]:
+    #     raise NotImplementedError
+
+    tstart = time.time()
+    if seed_iter is None:
+        seed_iter = itertools.count()
+
+    for _ in range(cfg["n_iter"]):
+        # Rollouts ========
+        paths = get_paths(env, agent, cfg, seed_iter)
+        paths_subsampled = paths #subsample_paths(paths)
+        compute_advantage(agent.baseline, paths_subsampled, gamma=cfg["gamma"], lam=cfg["lam"])
+        # VF Update ========
+        vf_stats = agent.baseline.fit(paths_subsampled)
+        # Pol Update ========
+        pol_stats = agent.updater(paths_subsampled)
+        # Stats ========
+        stats = OrderedDict()
+        add_episode_stats(stats, paths)
+        add_prefixed_stats(stats, "vf", vf_stats)
+        add_prefixed_stats(stats, "pol", pol_stats)
+        stats["TimeElapsed"] = time.time() - tstart
+        if callback: callback(stats)
+
 # def subsample_paths(gpaths):
 #     paths = copy.deepcopy(gpaths)
 #     for i in range(len(paths)):
